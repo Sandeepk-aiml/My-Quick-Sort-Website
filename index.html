@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickSort — Biopunk Visualizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Animated background canvas -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Particle burst container -->
+  <div id="particleContainer"></div>
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon">◈</span>
+        <div class="brand-text">
+          <h1 class="brand-name">QUICKSORT</h1>
+          <span class="brand-tagline">Biopunk Visualizer — Divide &amp; Conquer Protocol</span>
+        </div>
+      </div>
+      <div class="complexity-strip">
+        <div class="cplx cplx--best" title="Best Case">
+          <span class="cplx-label">BEST</span>
+          <span class="cplx-value">Ω(n log n)</span>
+        </div>
+        <div class="cplx cplx--avg" title="Average Case">
+          <span class="cplx-label">AVG</span>
+          <span class="cplx-value">Θ(n log n)</span>
+        </div>
+        <div class="cplx cplx--worst" title="Worst Case">
+          <span class="cplx-label">WORST</span>
+          <span class="cplx-value">O(n²)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ MAIN LAYOUT ══════════ -->
+  <div class="app-shell">
+
+    <!-- ── LEFT PANEL ── -->
+    <aside class="left-panel">
+
+      <!-- Controls -->
+      <section class="glass-card" id="controlCard">
+        <h2 class="card-title"><span class="card-title-num">01</span>CONTROLS</h2>
+
+        <div class="form-group">
+          <label class="form-label">Custom Array</label>
+          <div class="input-row">
+            <input type="text" id="customInput" class="form-input"
+              placeholder="e.g. 64, 25, 12, 22, 11" autocomplete="off" />
+            <button class="btn btn--ghost btn--sm" id="btnLoad" aria-label="Load custom array">↵</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Array Size <span class="form-val" id="sizeDisplay">24</span></label>
+          <input type="range" id="sizeSlider" class="slider" min="6" max="60" value="24" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Speed <span class="form-val" id="speedDisplay">5</span></label>
+          <input type="range" id="speedSlider" class="slider" min="1" max="10" value="5" />
+        </div>
+
+        <button class="btn btn--outline btn--full" id="btnRandom">⟳ Generate Random</button>
+
+        <div class="ctrl-row">
+          <button class="btn btn--primary" id="btnStart">▶ Start</button>
+          <button class="btn btn--ghost" id="btnPause" disabled>⏸ Pause</button>
+          <button class="btn btn--ghost" id="btnStep" disabled>⏭ Step</button>
+          <button class="btn btn--danger" id="btnReset">↺ Reset</button>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="glass-card" id="statsCard">
+        <h2 class="card-title"><span class="card-title-num">02</span>METRICS</h2>
+        <div class="stats-grid">
+          <div class="stat-cell">
+            <div class="stat-num" id="statComparisons">0</div>
+            <div class="stat-name">Comparisons</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-num" id="statSwaps">0</div>
+            <div class="stat-name">Swaps</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-num" id="statDepth">0</div>
+            <div class="stat-name">Max Depth</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-num" id="statSize">24</div>
+            <div class="stat-name">Array Size</div>
+          </div>
+        </div>
+        <div class="status-box" id="statusBox">
+          Ready — press Start or Step to begin.
+        </div>
+      </section>
+
+      <!-- Legend -->
+      <section class="glass-card" id="legendCard">
+        <h2 class="card-title"><span class="card-title-num">03</span>LEGEND</h2>
+        <div class="legend-list">
+          <div class="legend-row"><span class="swatch swatch--default"></span>Unsorted element</div>
+          <div class="legend-row"><span class="swatch swatch--range"></span>Active partition range</div>
+          <div class="legend-row"><span class="swatch swatch--pivot"></span>Pivot element</div>
+          <div class="legend-row"><span class="swatch swatch--compare"></span>Comparing</div>
+          <div class="legend-row"><span class="swatch swatch--swap"></span>Swapping</div>
+          <div class="legend-row"><span class="swatch swatch--sorted"></span>Sorted (final position)</div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ── CENTER ── -->
+    <main class="center-panel">
+
+      <!-- Visualization -->
+      <section class="glass-card viz-card" id="vizCard">
+        <h2 class="card-title"><span class="card-title-num">04</span>SORT MATRIX</h2>
+        <div class="bars-outer" id="barsOuter">
+          <div class="bars-inner" id="barsInner"></div>
+        </div>
+      </section>
+
+      <!-- Recursion Tree -->
+      <section class="glass-card tree-card" id="treeCard">
+        <h2 class="card-title"><span class="card-title-num">05</span>RECURSION TREE &amp; CALL STACK</h2>
+        <div class="tree-scroll">
+          <canvas id="treeCanvas" class="tree-canvas"></canvas>
+        </div>
+        <div class="stack-frames" id="stackFrames"></div>
+      </section>
+
+    </main>
+
+    <!-- ── RIGHT PANEL ── -->
+    <aside class="right-panel">
+
+      <!-- Pseudocode -->
+      <section class="glass-card code-card">
+        <h2 class="card-title"><span class="card-title-num">06</span>PSEUDOCODE</h2>
+        <div class="pseudo-wrap" id="pseudoWrap">
+          <div class="pseudo-fn-label">function quickSort(arr, lo, hi)</div>
+          <div class="pseudo-line" data-line="0">  if lo &lt; hi then</div>
+          <div class="pseudo-line" data-line="1">    pivot ← arr[hi]</div>
+          <div class="pseudo-line" data-line="2">    i ← lo − 1</div>
+          <div class="pseudo-line" data-line="3">    for j ← lo to hi − 1 do</div>
+          <div class="pseudo-line" data-line="4">      if arr[j] ≤ pivot then</div>
+          <div class="pseudo-line" data-line="5">        i ← i + 1</div>
+          <div class="pseudo-line" data-line="6">        swap(arr[i], arr[j])</div>
+          <div class="pseudo-line" data-line="7">    swap(arr[i+1], arr[hi])</div>
+          <div class="pseudo-line" data-line="8">    p ← i + 1</div>
+          <div class="pseudo-line" data-line="9">    quickSort(arr, lo, p−1)</div>
+          <div class="pseudo-line" data-line="10">   quickSort(arr, p+1, hi)</div>
+          <div class="pseudo-line" data-line="11">  end if</div>
+        </div>
+        <div class="algo-note">
+          <strong>Partition strategy:</strong> Lomuto scheme<br />
+          Pivot is always the last element in the subarray.
+        </div>
+      </section>
+
+    </aside>
+
+  </div><!-- /app-shell -->
+
+  <script src="script.js"></script>
+</body>
+</html>
